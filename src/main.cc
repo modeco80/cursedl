@@ -14,14 +14,15 @@ void GoCallback(Fl_Widget* widget, void* UserData) {
     }
 
     cursedl::ui::WriteOutput("Downloading " + modpackId + ( modpackVersion == "" ? "" : " (Version ID " + modpackVersion + ")"));
-
     // Run all of the modpack downloading stuff
     // somewhere (other) than the UI thread.
     // Shouldn't be as curse(d). HA. very funny.
     std::thread t([=]() {
-        if(!cursedl::GetModpack(modpackId, modpackVersion)) {
+        cursedl::ui::go_btn->deactivate();
+        if(!cursedl::DownloadModpack(modpackId, modpackVersion)) {
             cursedl::ui::WriteOutput("Error getting modpack.");
         }
+        cursedl::ui::go_btn->activate();
     });
     t.detach();
 }

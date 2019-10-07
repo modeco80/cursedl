@@ -12,3 +12,8 @@ A Curse Minecraft modpack downloader. Made because everyone else's didn't work.
 
 ## How to install
 `make install`
+
+## Why does cursedl.cc use WriteFunction() instead of `cursedl::ui::WriteOutput()`?
+This was an intentional choice to make sure the UI was seperated from the downloading logic.
+
+This choice makes it easier for other projects to integrate the downloading logic into their projects.
