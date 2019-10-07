@@ -104,7 +104,7 @@ if(packfileId == "") {
 }
 
 console.log("downloading (file ID) " + packfileId);
-var buf = curseAPI.DownloadFile(packfileId);
+var buf = curseAPI.DownloadFile(modinfo.latestFiles[packfileId]);
 
 if(curseAPI.IsError(buf)) {
 	console.log("Error: " + modinfo.error);
