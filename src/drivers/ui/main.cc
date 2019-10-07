@@ -1,6 +1,5 @@
-
-#include "common.h"
-#include "cursedl.h"
+#include "../../common.h"
+#include "../../cursedl.h"
 #include "ui.h"
 
 
@@ -27,8 +26,6 @@ void GoCallback(Fl_Widget* widget, void* UserData) {
     t.detach();
 }
 
-// TODO: 
-// Offer a TUI only version?
 int main(int argc, char** argv) {
     // Set the "library" write function
     // to our UI's write function
