@@ -5,7 +5,7 @@ project(CurseDL CXX)
 # add third party depends tree
 add_subdirectory(deps)
 
-find_package(FLTK REQUIRED)
+find_package(FLTK)
 find_package(Threads)
 
 # Put binaries into a bin dir
