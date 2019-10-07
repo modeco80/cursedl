@@ -6,7 +6,7 @@
 // why couldn't you have just 
 // done what you promised (a Linux client) years ago?
 // instead I have to do this shit
-// becuse you're too fucking lazy to!
+// because you're too fucking lazy to!
 // 
 // as I said before, fuck you, Curse.
 //
@@ -52,21 +52,30 @@ const curseAPI = {
 
 var av = process.argv.slice(1); // don't need node
 var downloadDir = "";
+var packfileId = "";
 
+// [] == required
+// <> == optional but can be passed
 if(av[1] == undefined || av[1] == "--help") {
 	process.stdout.write("curse modpack downloader by modeco80\n");
-	process.stdout.write("usage: " + av[0] + " [curse modpack ID] [directory]\n");
+	process.stdout.write("usage: " + av[0] + " [curse modpack ID] <modpack file ID> <directory>\n");
 	process.exit(0);
 }
 
+if(av[2] != undefined)
+	packfileId = av[2];
 
-// download dir checking
-if(av[2] == undefined)
-	downloadDir = "modpack-" + av[1];
-else
-	downloadDir = av[2];
+if(av[3] == undefined) {
+	if(packfileId != "")
+		downloadDir = "modpack-" + av[1] + "-" + packfileId;
+	else
+		downloadDir = "modpack-" + av[1];
+} else {
+	downloadDir = av[3];
+}
 
-// begin to download
+// The fun stuff starts here
+
 console.log('making directory ' + downloadDir + ' for modpack id ' + av[1]);
 try {
 	fs.mkdirSync(downloadDir);
@@ -81,7 +90,6 @@ if(curseAPI.IsError(modinfo)) {
 	console.log("Error: " + modinfo.error);
 	process.exit(1);
 }
-//console.log(modinfo);
 
 if(modinfo.gameSlug != 'minecraft') {
 	console.log("Not a Minecraft modpack");
@@ -90,21 +98,25 @@ if(modinfo.gameSlug != 'minecraft') {
 
 console.log('Modpack name ' + modinfo.name);
 
+// "" == just use latest
+if(packId == "") {
+	packId = modinfo.latestFiles[modinfo.latestFiles.length - 1].id;
+}
 
-console.log("downloading (file ID) " + modinfo.latestFiles[modinfo.latestFiles.length - 1].id);
-var zip = new require('node-zip')(curseAPI.DownloadFile(modinfo.latestFiles[modinfo.latestFiles.length - 1]), {base64: false, checkCRC32: true});
+console.log("downloading (file ID) " + packfileId);
+var buf = curseAPI.DownloadFile(packfileId);
 
-if(curseAPI.IsError(zip)) {
+if(curseAPI.IsError(buf)) {
 	console.log("Error: " + modinfo.error);
 	process.exit(1);
 }
 
-console.log("Got it!");
+var zip = new require('node-zip')(buf, { base64: false, checkCRC32: true });
+console.log("Downloaded modpack ZIP.");
 
 // iterate through manifest.json
-
 var manifest = JSON.parse(zip.files['manifest.json']._data);
-//console.log(manifest);
+
 for(var i = 0; i < manifest.files.length; ++i) {
 	// Get all the mods
 	var ti = curseAPI.GetModInfo(manifest.files[i].projectID);
@@ -122,12 +134,15 @@ for(var i = 0; i < manifest.files.length; ++i) {
 			// Hopefully Curse(d) appreciates it
 			if(!fs.existsSync(path)) { 
 				var buf = curseAPI.DownloadFile(it);
+				if(curseAPI.IsError(buf)) {
+					console.log("Error: " + modinfo.error);
+					process.exit(1);
+				}
 				// write the resulting buffer out
-
 				console.log("Resulting path: " + path);
 				fs.writeFileSync(path, buf, 'binary');
 			} else {
-				console.log("Shoddy cache found mod file so we aren't downloading it again");
+				console.log("Cache found file");
 			}
 		}		
 	});
@@ -135,7 +150,7 @@ for(var i = 0; i < manifest.files.length; ++i) {
 
 console.log("Finished grabbing mods, extracting overrides folder");
 
-// the nice thing is that the zip is all in memory so this will be pretty fast
+// Extract everything from the modpack ZIP's overrides folder
 Object.keys(zip.files).forEach((key) => {
 	if(key.indexOf("overrides") != -1) {
 		var slicedkey = key.slice("overrides".length);
