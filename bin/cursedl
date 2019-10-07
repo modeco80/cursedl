@@ -99,8 +99,8 @@ if(modinfo.gameSlug != 'minecraft') {
 console.log('Modpack name ' + modinfo.name);
 
 // "" == just use latest
-if(packId == "") {
-	packId = modinfo.latestFiles[modinfo.latestFiles.length - 1].id;
+if(packfileId == "") {
+	packfileId = modinfo.latestFiles[modinfo.latestFiles.length - 1].id;
 }
 
 console.log("downloading (file ID) " + packfileId);
