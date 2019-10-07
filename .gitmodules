@@ -1,0 +1,9 @@
+[submodule "deps/cpr"]
+	path = deps/cpr
+	url = https://github.com/whoshuu/cpr
+[submodule "deps/json"]
+	path = deps/json
+	url = https://github.com/nlohmann/json
+[submodule "deps/zipper"]
+	path = deps/zipper
+	url = https://github.com/sebastiandev/zipper

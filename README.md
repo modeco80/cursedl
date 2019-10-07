@@ -1,14 +1,14 @@
 ## cursedl
 A Curse Minecraft modpack downloader. Made because everyone else's didn't work.
 
+## How to build
+- Clone the sources using `git clone --recursive https://github.com/modeco80/cursedl` (optionally add `--jobs <CPU CORE COUNT>` for faster clone)
+- make a build directory
+- cd into build directory
+- `cmake ..`
+- make (`-j <CPU CORE COUNT>`)
+- ...
+- Profit!
+
 ## How to install
-`npm i -g git+https://git@github.com/modeco80/cursedl`
-
-
-## How to use
-
-Find the modpack you want to get, then
-
-copy the "Project ID" from the Curse page
-
-and run `cursedl <modpack project ID>`. It's that easy!
+`make install`
