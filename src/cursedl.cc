@@ -67,12 +67,14 @@ namespace cursedl {
             WriteFunction("Error downloading modpack ZIP");
             return false;
         }
-        WriteFunction("ZIP download success");
 
-        auto stream = std::istringstream(std::get<1>(packZip));
+        WriteFunction("Download success");
+
+        std::istringstream stream(std::get<1>(packZip));
         auto zip = zipper::Unzipper(stream);
         
-        auto manifest_stream = std::stringstream();
+        std::stringstream manifest_stream;
+
         if(!zip.extractEntryToStream("manifest.json", manifest_stream)) {
             WriteFunction("Couldn't extract manifest");
             return false;
@@ -89,6 +91,7 @@ namespace cursedl {
             WriteFunction("Existing directory tree found, using that");
 
         fs::path modpackPath = fs::current_path() / ("modpack-" + ModpackID);
+        auto modRoot = modpackPath / "mods";
 
         for(auto manifestFile : manifest["files"]) {
             std::string modID = std::to_string(manifestFile["projectID"].get<std::uint64_t>());
@@ -115,13 +118,74 @@ namespace cursedl {
                 return false;
             }
 
+            if(!applicableVersion["dependencies"].empty()) {
+				std::function<bool(const nlohmann::json&)> GetDepends = [&](const nlohmann::json& dependencies) {
+					if(dependencies.empty()) {
+						WriteFunction("No dependencies given");
+						return true;
+					}
+					for(auto depend : dependencies) {
+						nlohmann::json files;
+						try {
+				            WriteFunction("Getting dependency of mod " + std::to_string(depend["addonId"].get<std::uint64_t>()));
+				            files = api::GetCurseFiles(std::to_string(depend["addonId"].get<std::uint64_t>()));
+				        } catch(api::Error& e) {
+				            WriteFunction("Error: " + std::string(e.what()));
+    	        			return false;
+				        }
+					
+						for(auto file: files) {
+							if(file["alternateFileId"].get<std::uint64_t>() == 0) {
+
+								if(!file["dependencies"].empty()) {
+									// handle dependencies (of) dependencies
+									WriteFunction("Getting dependencies of depend");
+									if(!GetDepends(file["dependencies"])) {
+										return false;
+									}
+								}
+
+					            WriteFunction("Getting file " + std::to_string(file["id"].get<std::uint64_t>()));
+			   			        std::string name = file["downloadUrl"].get<std::string>();
+   		    				    name = name.substr(name.find_last_of('/'), std::string::npos);
+	
+				            	if(fs::exists(modRoot.native() + name)) {
+				        	        WriteFunction("Already found depend of mod " + std::to_string(depend["addonId"].get<std::uint64_t>()));
+									break;
+								}
+
+								auto fileTuple = api::DownloadCurseFile(file);
+								if(std::get<0>(fileTuple) == false) {
+									WriteFunction("Error getting depend of mod " + std::to_string(depend["addonId"].get<std::uint64_t>()));
+									return false;
+								}
+
+    				        	std::stringstream fs(std::get<1>(fileTuple));
+				            	std::ofstream outs(modRoot.native() + name);
+				            	outs << fs.rdbuf();
+				            	outs.close();
+				        	    // cleanly free up resources even though this will probably be done anyways
+				        	    fs.clear();
+								break;
+							}
+						}
+					}
+					return true;
+				};
+
+				if(!GetDepends(applicableVersion["dependencies"])) {
+					WriteFunction("Error getting dependencies.");
+					return false;
+				}
+			}
+
             auto mod = api::DownloadCurseFile(applicableVersion);
             if(std::get<0>(mod) == false) {
                 WriteFunction("Failed to download mod " + modID);
                 return false;
             }
 
-            auto modRoot = modpackPath / "mods";
+
 
             std::stringstream file(std::get<1>(mod));
             std::string name = applicableVersion["downloadUrl"].get<std::string>();
