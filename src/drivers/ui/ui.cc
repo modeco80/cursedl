@@ -13,6 +13,7 @@ namespace ui {
   std::string textbuf;
 
   void WriteOutput(const std::string& str) {
+      textbuf += "[CurseDL] ";
       textbuf += str;
       textbuf += '\n';
       dl_output_buf->text(textbuf.c_str());

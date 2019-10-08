@@ -142,6 +142,7 @@ namespace cursedl {
 									if(!GetDepends(file["dependencies"])) {
 										return false;
 									}
+									WriteFunction("Finished getting dependencies of depend");
 								}
 
 					            WriteFunction("Getting file " + std::to_string(file["id"].get<std::uint64_t>()));

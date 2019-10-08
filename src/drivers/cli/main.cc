@@ -3,7 +3,7 @@
 
 // write function for CurseDL CLI
 void CliWrite(const std::string& str) {
-    std::cout << str << '\n';
+    std::cout << "[CurseDL] " << str << '\n';
 }
 
 void CliUsage(const char* prog) {
