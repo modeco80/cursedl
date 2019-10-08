@@ -9,8 +9,8 @@ void CliWrite(const std::string& str) {
 void CliUsage(const char* prog) {
     std::cout << "cursedl-cli : CLI interface to cursedl Curse Minecraft modpack downloader\n";
     std::cout << "(C) 2019 modeco80 under the MIT License\n";
-    std::cout << "\tUsage:\n";
-    std::cout << prog << " [Curse modpack ID] <OPTIONAL: modpack file version ID>" << "\n";
+    std::cout << "\t\b\b\b\b\b\b\b\bUsage:\n";
+    std::cout << "\t\b\b\b\b" << prog << " [Curse modpack ID] <OPTIONAL: modpack file version ID>" << "\n";
 }
 
 int main(int argc, char** argv) {

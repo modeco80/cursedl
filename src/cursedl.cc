@@ -71,10 +71,9 @@ namespace cursedl {
         WriteFunction("Download success");
 
         std::istringstream stream(std::get<1>(packZip));
-        auto zip = zipper::Unzipper(stream);
+        zipper::Unzipper zip(stream);
         
         std::stringstream manifest_stream;
-
         if(!zip.extractEntryToStream("manifest.json", manifest_stream)) {
             WriteFunction("Couldn't extract manifest");
             return false;
@@ -91,7 +90,7 @@ namespace cursedl {
             WriteFunction("Existing directory tree found, using that");
 
         fs::path modpackPath = fs::current_path() / ("modpack-" + ModpackID);
-        auto modRoot = modpackPath / "mods";
+        fs::path modRoot = modpackPath / "mods";
 
         for(auto manifestFile : manifest["files"]) {
             std::string modID = std::to_string(manifestFile["projectID"].get<std::uint64_t>());
@@ -134,7 +133,7 @@ namespace cursedl {
     	        			return false;
 				        }
 					
-						for(auto file: files) {
+						for(auto file : files) {
 							if(file["alternateFileId"].get<std::uint64_t>() == 0) {
 
 								if(!file["dependencies"].empty()) {
@@ -164,7 +163,7 @@ namespace cursedl {
 				            	std::ofstream outs(modRoot.native() + name);
 				            	outs << fs.rdbuf();
 				            	outs.close();
-				        	    // cleanly free up resources even though this will probably be done anyways
+
 				        	    fs.clear();
 								break;
 							}
